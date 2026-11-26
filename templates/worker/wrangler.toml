@@ -1,0 +1,5 @@
+name = "cf-vless-sub"
+main = "worker.js"
+compatibility_date = "2026-11-26"
+
+# 透過 wrangler secret put SUB_TOKEN 與 SUB_YAML 配置機敏內容

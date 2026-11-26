@@ -1,0 +1,17 @@
+{
+  "_comment": "將此物件加入 /etc/sing-box/config.json 的 inbounds 陣列中",
+  "type": "vless",
+  "tag": "vless-ws-cf-in",
+  "listen": "127.0.0.1",
+  "listen_port": 9445,
+  "users": [
+    {
+      "name": "default-user",
+      "uuid": "YOUR_GENERATED_UUID_HERE"
+    }
+  ],
+  "transport": {
+    "type": "ws",
+    "path": "/cfws_YOUR_SECRET_PATH"
+  }
+}
