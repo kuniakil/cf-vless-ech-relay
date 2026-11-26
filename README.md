@@ -21,12 +21,32 @@
 
 ---
 
+## 📋 前置準備需求（Requirements）
+
+在開始之前，請確認你具備以下條件：
+1. **一台 Linux VPS**：
+   - Debian 11+ / Ubuntu 20.04+。
+   - 已安裝 **Nginx**（需具備 HTTP 與 Stream 模組）。
+   - 已安裝 **sing-box** 或 **Xray-core** 其中之一。
+2. **一個 Cloudflare 帳號**：
+   - 免費方案即可，不需要任何付費功能。
+3. **一個託管在 Cloudflare 的域名（強烈建議使用「免心疼」網域）**：
+   - ⚠️ **強烈建議**：不要使用你綁定了重要工作或個人生產服務的主網域！
+   - 💡 **最佳實踐**：可以到註冊商申請完全免費的二級網域（如 `eu.org`、`us.kg`、`ipv64.net` 或 `home64.de` 等動態/免費 DNS），或是花少許幾美元買一個 `xyz` / `top` 免洗網域，將其 NS 委派託管至 Cloudflare。
+   - **優點**：即使該子網域未來遇到極端情況被封鎖或干擾，直接換一個二級網域即可，完全不傷及本尊網域。
+4. **Cloudflare Worker 權限**：
+   - 用於發布訂閱檔，免費帳號每日 100,000 次請求額度已綽綽有餘。
+
+---
+
 ## 🚀 核心架構亮點
 
 - **零侵入共存**：透過 Nginx Stream（`ssl_preread`）SNI 分流，與現有的 Reality、AnyTLS、Hysteria2 或 Web 站點完美共用 443 埠。
 - **抗探測與隱蔽性**：隨機高熵 WebSocket 路徑，非指定請求一律回傳 404；啟用 **ECH（Encrypted Client Hello）**，阻絕中間人對 SNI 的明文嗅探。
 - **免維護憑證**：採用 Cloudflare 官方 15 年 Origin CA 憑證，杜絕 Let's Encrypt 自動續期回源失敗的隱患。
-- **跨平台優雅訂閱**：透過 Cloudflare Worker 實作訂閱發布，內建多節點優選池，並支援在訂閱 URL 帶入 `?ip=x.x.x.x` 即時覆寫，免去在客戶端編寫覆寫腳本的麻煩。
+- **Worker 級跨平台優雅訂閱（免客戶端寫腳本）**：
+  - 訂閱由 Cloudflare Worker 發布，**預設展開多節點優選池**（涵蓋企業優選段、亞太香港骨幹段、官方預設段）。
+  - **極速動態換 IP**：利用本地測速工具（如 `CloudflareSpeedTest`）測出新優選 IP 後，**只要在訂閱 URL 後方帶上 `?ip=x.x.x.x`**（例如 `https://sub.yourdomain.com/<TOKEN>?ip=104.16.88.99`），Worker 就會在記憶體中即時將節點 IP 覆寫回傳！手機、平板、電腦只要點擊「更新訂閱」就能立刻同步最新優選 IP，完全不需在客戶端手動修改或編寫覆寫腳本。
 
 ---
 
@@ -53,6 +73,26 @@ AI Agent 將會：
 2. 根據現狀提出具體的修改 diff 給你審查確認。
 3. 執行備份、配置檔案寫入、語法測試（`nginx -t` / `sing-box check`）並平滑生效。
 4. 交付訂閱設定檔與驗收測試報告。
+
+### 第三步：取得訂閱與優選 IP 動態更新使用法
+
+AI Agent 部署完成後，會為你產生 Cloudflare Worker 的訂閱 URL：
+
+1. **日常懶人使用（開箱即測）**：
+   - 直接將訂閱 URL（`https://sub.yourdomain.com/<TOKEN>`）匯入 Clash Verge Rev、FlClash、Shadowrocket 等客戶端。
+   - 訂閱內建三組不同路由特性的優選節點池：
+     - `CF-WS-CDN`（預設企業級優選 Anycast 段）
+     - `CF-WS-CDN-HKG`（香港/亞太優選骨幹段，晚高峰防塞車）
+     - `CF-WS-CDN-ANYCAST`（官方預設 Anycast 邊緣）
+   - 在客戶端按閃電圖示測速，挑當下延遲最低的節點連線即可。
+
+2. **進階極客使用（本地極速優選 IP 動態注入）**：
+   - 當晚高峰感覺出口不順時，使用開源工具 [CloudflareSpeedTest](https://github.com/XIU2/CloudflareSpeedTest) 在本地寬頻測出當下最快 IP（例如 `104.16.88.99`）。
+   - **完全不需要改動伺服器或客戶端腳本**，只要在你的客戶端訂閱網址後方加上參數：
+     ```text
+     https://sub.yourdomain.com/<TOKEN>?ip=104.16.88.99
+     ```
+   - 點擊「更新訂閱」，Worker 就會自動將節點 IP 動態替換成該 IP。全家所有設備（Mac、Windows、iPhone、Android）只要改 URL 參數就能同步生效！
 
 ---
 
