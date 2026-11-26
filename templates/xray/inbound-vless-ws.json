@@ -1,0 +1,23 @@
+{
+  "_comment": "將此物件加入 Xray 設定檔 (如 /usr/local/etc/xray/config.json) 的 inbounds 陣列中",
+  "tag": "vless-ws-cf-in",
+  "listen": "127.0.0.1",
+  "port": 9445,
+  "protocol": "vless",
+  "settings": {
+    "clients": [
+      {
+        "id": "YOUR_GENERATED_UUID_HERE",
+        "level": 0
+      }
+    ],
+    "decryption": "none"
+  },
+  "streamSettings": {
+    "network": "ws",
+    "security": "none",
+    "wsSettings": {
+      "path": "/cfws_YOUR_SECRET_PATH"
+    }
+  }
+}

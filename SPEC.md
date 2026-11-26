@@ -37,9 +37,9 @@
 
 ## 2. 核心架構原則（AI Agent 必守規範）
 
-1. **職責分離（TLS 歸 Nginx，協議歸 sing-box）**：
-   - `sing-box` 的 VLESS inbound **禁止配置 `tls` 區塊**，亦**嚴禁開啟 `flow`**（如 `xtls-rprx-vision`）。
-   - 回源 TLS 握手由 `Nginx` 統一終結，sing-box 僅於本地回環介面（`127.0.0.1`）處理明文 WebSocket 轉發。
+1. **職責分離（TLS 歸 Nginx，協議歸 sing-box / Xray）**：
+   - `sing-box` 或 `Xray` 的 VLESS inbound **禁止配置 `tls` 區塊**，亦**嚴禁開啟 `flow`**（如 `xtls-rprx-vision`）。
+   - 回源 TLS 握手由 `Nginx` 統一終結，核心核心程式僅於本地回環介面（`127.0.0.1`）處理明文 WebSocket 轉發。
 2. **網域隔離（橘雲與灰雲互不干擾）**：
    - 直連協議（如 Reality、Hysteria2、AnyTLS）使用的網域必須保持灰雲（DNS Only）。
    - 本方案必須使用獨立的二級或三級子網域（如 `cdn.example.com`），並在 Cloudflare 開啟橘雲（Proxied）。
@@ -107,7 +107,9 @@ server {
 }
 ```
 
-### 4.3 sing-box Inbound 配置規格
+### 4.3 核心服務端 Inbound 配置規格（sing-box 或 Xray 二選一）
+
+#### 選項 A：sing-box Inbound 規格
 ```json
 {
   "type": "vless",
@@ -123,6 +125,32 @@ server {
   "transport": {
     "type": "ws",
     "path": "/<與Nginx一致的隨機路徑>"
+  }
+}
+```
+
+#### 選項 B：Xray Inbound 規格
+```json
+{
+  "tag": "vless-ws-cf-in",
+  "listen": "127.0.0.1",
+  "port": 9445,
+  "protocol": "vless",
+  "settings": {
+    "clients": [
+      {
+        "id": "<隨機UUID>",
+        "level": 0
+      }
+    ],
+    "decryption": "none"
+  },
+  "streamSettings": {
+    "network": "ws",
+    "security": "none",
+    "wsSettings": {
+      "path": "/<與Nginx一致的隨機路徑>"
+    }
   }
 }
 ```

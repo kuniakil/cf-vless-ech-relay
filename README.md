@@ -69,6 +69,8 @@ cf-vless-ech-relay/
 │   │   └── sni-stream-snippet.conf  # Nginx Stream 443 SNI 分流片段
 │   ├── sing-box/
 │   │   └── inbound-vless-ws.json    # sing-box VLESS-WS inbound 片段
+│   ├── xray/
+│   │   └── inbound-vless-ws.json    # Xray-core VLESS-WS inbound 片段
 │   └── worker/
 │       ├── worker.js               # 支援 ?ip= 動態參數的訂閱發布 Worker
 │       └── wrangler.toml           # Wrangler 部署參考
